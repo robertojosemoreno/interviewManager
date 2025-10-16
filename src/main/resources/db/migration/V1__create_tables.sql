@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS company(
+    id UUID NOT NULL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS open_position(
+    id UUID NOT NULL PRIMARY KEY,
+    level VARCHAR(80) NOT NULL,
+    type VARCHAR(80) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS interview
+(
+    id UUID NOT NULL PRIMARY KEY,
+    type VARCHAR(80) NOT NULL,
+    interview_date TIMESTAMP   NOT NULL,
+    position_id UUID NOT NULL,
+    company_id  UUID NOT NULL
+);
+
