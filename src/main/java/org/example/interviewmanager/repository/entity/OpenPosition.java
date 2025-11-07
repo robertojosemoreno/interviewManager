@@ -18,6 +18,10 @@ public class OpenPosition {
     @Column(name="type", nullable = false)
     private String type;
 
+    @ManyToOne()
+    @JoinColumn(name="company_id")
+    private Company company;
+
     public UUID getId() {
         return id;
     }
@@ -33,5 +37,9 @@ public class OpenPosition {
     public String getType() { return type; }
 
     public void setType(String type) { this.type = type; }
+
+    public Company getCompany() { return company; }
+
+    public void setCompany(Company company) { this.company = company; }
 
 }

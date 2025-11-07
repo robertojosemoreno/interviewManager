@@ -23,10 +23,6 @@ public class Interview {
     @JoinColumn(name="position_id")
     private OpenPosition position;
 
-    @ManyToOne()
-    @JoinColumn(name="company_id")
-    private Company company;
-
     public UUID getId() {
         return id;
     }
@@ -46,8 +42,4 @@ public class Interview {
     public OpenPosition getPosition() { return position; }
 
     public void setPosition(OpenPosition position) { this.position = position; }
-
-    public Company getCompany() { return company; }
-
-    public void setCompany(Company company) { this.company = company; }
 }

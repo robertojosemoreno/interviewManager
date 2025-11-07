@@ -6,8 +6,11 @@ import org.example.interviewmanager.service.OpenPositionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,12 +25,17 @@ public class OpenPositionController {
     }
 
     @PostMapping("/")
-    public OpenPositionDTO saveOpenPosition(@Valid @RequestBody OpenPositionDTO openPositionDTO) {
-        return openPositionService.saveOpenPosition(openPositionDTO);
+    public ResponseEntity<OpenPositionDTO> saveOpenPosition(@Valid @RequestBody OpenPositionDTO openPositionDTO) {
+        OpenPositionDTO openPositionDTOSaved = openPositionService.saveOpenPosition(openPositionDTO);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(openPositionDTOSaved.getId()) // Assuming MyEntity has an getId() method
+                .toUri();
+        return ResponseEntity.created(location).body(openPositionDTOSaved);
     }
 
     @GetMapping("/")
-    public List<OpenPositionDTO> fetchOpenPositions(
+    public ResponseEntity<List<OpenPositionDTO>> fetchOpenPositions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "level") String sortBy,
@@ -35,11 +43,11 @@ public class OpenPositionController {
     ) {
         Sort sort = ascending ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        return openPositionService.getOpenPositions(pageable);
+        return ResponseEntity.ok(openPositionService.getOpenPositions(pageable));
     }
 
     @GetMapping("/{level}")
-    public List<OpenPositionDTO> fetchOpenPositionsByLevel(
+    public ResponseEntity<List<OpenPositionDTO>> fetchOpenPositionsByLevel(
             @PathVariable String level,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
@@ -48,12 +56,12 @@ public class OpenPositionController {
     ) {
         Sort sort = ascending ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        return openPositionService.getOpenPositionsByLevel(level, pageable);
+        return ResponseEntity.ok(openPositionService.getOpenPositionsByLevel(level, pageable));
     }
 
     @PutMapping("/{id}")
-    public OpenPositionDTO updateOpenPosition(@PathVariable UUID id, @Valid @RequestBody OpenPositionDTO openPositionDTO) {
-        return openPositionService.updateOpenPosition(openPositionDTO, id);
+    public ResponseEntity<OpenPositionDTO> updateOpenPosition(@PathVariable UUID id, @Valid @RequestBody OpenPositionDTO openPositionDTO) {
+        return ResponseEntity.ok(openPositionService.updateOpenPosition(openPositionDTO, id));
     }
 
 }

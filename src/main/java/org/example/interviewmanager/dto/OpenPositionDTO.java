@@ -1,5 +1,7 @@
 package org.example.interviewmanager.dto;
 
+import org.example.interviewmanager.repository.entity.Company;
+
 import java.util.UUID;
 
 public class OpenPositionDTO {
@@ -7,6 +9,7 @@ public class OpenPositionDTO {
     private UUID id;
     private String level;
     private String type;
+    private CompanyDTO company;
 
     public UUID getId() {
         return id;
@@ -30,5 +33,13 @@ public class OpenPositionDTO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public CompanyDTO getCompany() {
+        return company;
+    }
+
+    public void setCompany(CompanyDTO company) {
+        this.company = company;
     }
 }

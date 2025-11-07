@@ -6,8 +6,11 @@ import org.example.interviewmanager.service.CompanyService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,12 +25,17 @@ public class CompanyController {
     }
 
     @PostMapping("/")
-    public CompanyDTO saveCompany(@Valid @RequestBody CompanyDTO companyDTO) {
-        return companyService.saveCompany(companyDTO);
+    public ResponseEntity<CompanyDTO> saveCompany(@Valid @RequestBody CompanyDTO companyDTO) {
+        CompanyDTO companyDTOSaved = companyService.saveCompany(companyDTO);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(companyDTOSaved.getId()) // Assuming MyEntity has an getId() method
+                .toUri();
+        return ResponseEntity.created(location).body(companyDTOSaved);
     }
 
     @GetMapping("/")
-    public List<CompanyDTO> fetchCompanies(
+    public ResponseEntity<List<CompanyDTO>> fetchCompanies(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "name") String sortBy,
@@ -35,11 +43,11 @@ public class CompanyController {
     ) {
         Sort sort = ascending ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        return companyService.getCompanies(pageable);
+        return ResponseEntity.ok(companyService.getCompanies(pageable));
     }
 
     @GetMapping("/{name}")
-    public List<CompanyDTO> fetchCompaniesByName(
+    public  ResponseEntity<List<CompanyDTO>> fetchCompaniesByName(
             @PathVariable String name,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
@@ -48,12 +56,12 @@ public class CompanyController {
     ) {
         Sort sort = ascending ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        return companyService.getCompaniesByName(name,pageable);
+        return ResponseEntity.ok(companyService.getCompaniesByName(name,pageable));
     }
 
     @PutMapping("/{id}")
-    public CompanyDTO updateCompany(@PathVariable UUID id, @Valid @RequestBody  CompanyDTO companyDTO) {
-        return companyService.updateCompany(companyDTO, id);
+    public  ResponseEntity<CompanyDTO> updateCompany(@PathVariable UUID id, @Valid @RequestBody  CompanyDTO companyDTO) {
+        return  ResponseEntity.ok(companyService.updateCompany(companyDTO, id));
     }
 
 }

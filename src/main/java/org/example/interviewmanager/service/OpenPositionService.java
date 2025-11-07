@@ -1,8 +1,12 @@
 package org.example.interviewmanager.service;
 
+import org.example.interviewmanager.dto.CompanyDTO;
 import org.example.interviewmanager.dto.OpenPositionDTO;
+import org.example.interviewmanager.repository.CompanyRepository;
 import org.example.interviewmanager.repository.OpenPositionRepository;
+import org.example.interviewmanager.repository.entity.Company;
 import org.example.interviewmanager.repository.entity.OpenPosition;
+import org.example.interviewmanager.utils.exception.CompanyNotFoundException;
 import org.example.interviewmanager.utils.exception.OpenPositionNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -19,10 +23,12 @@ import java.util.stream.Collectors;
 public class OpenPositionService {
 
     private final OpenPositionRepository openPositionRepository;
+    private final CompanyRepository companyRepository;
     private final ModelMapper modelMapper;
 
-    public OpenPositionService(OpenPositionRepository openPositionRepository, ModelMapper modelMapper) {
+    public OpenPositionService(OpenPositionRepository openPositionRepository, CompanyRepository companyRepository,  ModelMapper modelMapper) {
         this.openPositionRepository = openPositionRepository;
+        this.companyRepository = companyRepository;
         this.modelMapper = modelMapper;
     }
 
@@ -42,8 +48,14 @@ public class OpenPositionService {
     }
 
     public OpenPositionDTO saveOpenPosition(OpenPositionDTO openPositionDTO) {
-        OpenPosition openPosition = modelMapper.map(openPositionDTO, OpenPosition.class);
-        return modelMapper.map(openPositionRepository.save(openPosition), OpenPositionDTO.class);
+        Optional<Company> companyOpt = companyRepository.findById(openPositionDTO.getCompany().getId());
+        if(companyOpt.isEmpty()) {
+            throw new CompanyNotFoundException("Company id: "+ openPositionDTO.getCompany().getId()+" not found");
+        } else {
+            openPositionDTO.setCompany(modelMapper.map(companyOpt.get(), CompanyDTO.class));
+            OpenPosition openPosition = modelMapper.map(openPositionDTO, OpenPosition.class);
+            return modelMapper.map(openPositionRepository.save(openPosition), OpenPositionDTO.class);
+        }
     }
 
     public OpenPositionDTO updateOpenPosition(OpenPositionDTO openPositionDTO, UUID id) {

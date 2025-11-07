@@ -11,7 +11,6 @@ public class InterviewDTO {
     private String type;
     private Timestamp interviewDate;
     private OpenPosition position;
-    private Company company;
 
     public UUID getId() {
         return id;
@@ -43,13 +42,5 @@ public class InterviewDTO {
 
     public void setPosition(OpenPosition position) {
         this.position = position;
-    }
-
-    public Company getCompany() {
-        return company;
-    }
-
-    public void setCompany(Company company) {
-        this.company = company;
     }
 }
