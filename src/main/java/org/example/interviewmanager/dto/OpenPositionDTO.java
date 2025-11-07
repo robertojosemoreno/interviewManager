@@ -1,7 +1,5 @@
 package org.example.interviewmanager.dto;
 
-import org.example.interviewmanager.repository.entity.Company;
-
 import java.util.UUID;
 
 public class OpenPositionDTO {

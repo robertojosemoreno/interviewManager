@@ -1,6 +1,5 @@
 package org.example.interviewmanager.dto;
 
-import org.example.interviewmanager.repository.entity.Company;
 import org.example.interviewmanager.repository.entity.OpenPosition;
 
 import java.sql.Timestamp;
