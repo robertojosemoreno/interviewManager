@@ -29,7 +29,7 @@ public class CompanyController {
         CompanyDTO companyDTOSaved = companyService.saveCompany(companyDTO);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(companyDTOSaved.getId()) // Assuming MyEntity has an getId() method
+                .buildAndExpand(companyDTOSaved.id()) // Assuming MyEntity has an getId() method
                 .toUri();
         return ResponseEntity.created(location).body(companyDTOSaved);
     }

@@ -3,8 +3,8 @@ package org.example.interviewmanager.service;
 import org.example.interviewmanager.dto.CompanyDTO;
 import org.example.interviewmanager.repository.CompanyRepository;
 import org.example.interviewmanager.repository.entity.Company;
+import org.example.interviewmanager.utils.CompanyMapper;
 import org.example.interviewmanager.utils.exception.CompanyNotFoundException;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,34 +19,34 @@ import java.util.stream.Collectors;
 public class CompanyService {
 
     private final CompanyRepository companyRepository;
-    private final ModelMapper modelMapper;
 
-    public CompanyService(CompanyRepository companyRepository, ModelMapper modelMapper) {
+    public CompanyService(CompanyRepository companyRepository) {
         this.companyRepository = companyRepository;
-        this.modelMapper = modelMapper;
     }
 
     public CompanyDTO getCompanyById(UUID id) {
-        return modelMapper.map(companyRepository.findById(id), CompanyDTO.class);
+        return CompanyMapper.toDTO(
+                companyRepository.findById(id)
+                        .orElseThrow(() -> new CompanyNotFoundException("Company not found")));
     }
 
     public List<CompanyDTO> getCompaniesByName(String name, Pageable pageable) {
         Page<Company> result = companyRepository.findCompaniesByName(name, pageable);
-        return result.stream().map((element) -> modelMapper.map(element, CompanyDTO.class)).collect(Collectors.toList());
+        return result.stream().map(CompanyMapper::toDTO).collect(Collectors.toList());
     }
 
     public List<CompanyDTO> getCompanies(Pageable pageable) {
         Page<Company> result = companyRepository.findAll(pageable);
-        return result.stream().map((element) -> modelMapper.map(element, CompanyDTO.class)).collect(Collectors.toList());
+        return result.stream().map(CompanyMapper::toDTO).collect(Collectors.toList());
     }
 
     public CompanyDTO saveCompany(CompanyDTO companyDTO) {
-        Company company = modelMapper.map(companyDTO, Company.class);
-        return modelMapper.map(companyRepository.save(company), CompanyDTO.class);
+        Company company = CompanyMapper.toEntity(companyDTO);
+        return CompanyMapper.toDTO(companyRepository.save(company));
     }
 
     public CompanyDTO updateCompany(CompanyDTO companyDTO, UUID id) {
-        Company company = modelMapper.map(companyDTO, Company.class);
+        Company company = CompanyMapper.toEntity(companyDTO);
         Optional<Company> companyDbOptional = companyRepository.findById(id);
         if (companyDbOptional.isPresent()) {
             Company companyDb = companyDbOptional.get();
@@ -56,7 +56,7 @@ public class CompanyService {
             ) {
                 companyDb.setName(company.getName());
             }
-            return modelMapper.map(companyRepository.save(companyDb), CompanyDTO.class);
+            return CompanyMapper.toDTO(companyRepository.save(companyDb));
         } else {
             throw new CompanyNotFoundException("Company not found");
         }

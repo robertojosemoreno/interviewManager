@@ -29,7 +29,7 @@ public class OpenPositionController {
         OpenPositionDTO openPositionDTOSaved = openPositionService.saveOpenPosition(openPositionDTO);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(openPositionDTOSaved.getId()) // Assuming MyEntity has an getId() method
+                .buildAndExpand(openPositionDTOSaved.id()) // Assuming MyEntity has an getId() method
                 .toUri();
         return ResponseEntity.created(location).body(openPositionDTOSaved);
     }

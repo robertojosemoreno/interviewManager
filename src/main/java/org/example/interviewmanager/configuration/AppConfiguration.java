@@ -13,7 +13,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+//@EnableAsync
 @Configuration
+/*@ConditionalOnProperty(
+        value = "spring.thread-executor",
+        havingValue = "virtual"
+)*/
 public class AppConfiguration {
 
     private final UserRepository userRepository;
@@ -51,5 +56,18 @@ public class AppConfiguration {
         return  authenticationProvider;
     }
 
+    /*@Bean
+    public TaskExecutor applicationTaskExecutor() {
+        return new TaskExecutorAdapter(
+                Executors.newVirtualThreadPerTaskExecutor()
+        );
+    }
+
+    @Bean
+    public TomcatProtocolHandlerCustomizer<?> protocolHandlerVirtualThreadExecutorCustomizer() {
+        return protocolHandler -> {
+            protocolHandler.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
+        };
+    }*/
 
 }

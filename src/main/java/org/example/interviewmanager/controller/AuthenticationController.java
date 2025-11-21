@@ -35,9 +35,7 @@ public class AuthenticationController {
     public ResponseEntity<LoginResponseDTO> authenticate(@RequestBody LoginUserDTO loginUserDTO) throws NoSuchAlgorithmException {
         UserDTO authUser = authenticationService.authenticate(loginUserDTO);
         String jwtToken = jwtService.generateToken(authUser);
-        LoginResponseDTO loginResponse = new LoginResponseDTO();
-        loginResponse.setToken(jwtToken);
-        loginResponse.setExpiresIn(jwtService.getExpirationTime());
+        LoginResponseDTO loginResponse = new LoginResponseDTO(jwtToken, jwtService.getExpirationTime());
         return ResponseEntity.ok(loginResponse);
     }
 }

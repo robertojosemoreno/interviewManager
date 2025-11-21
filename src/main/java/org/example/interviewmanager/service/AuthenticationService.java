@@ -5,9 +5,10 @@ import org.example.interviewmanager.dto.RegisterUserDTO;
 import org.example.interviewmanager.dto.UserDTO;
 import org.example.interviewmanager.repository.UserRepository;
 import org.example.interviewmanager.repository.entity.User;
-import org.modelmapper.ModelMapper;
+import org.example.interviewmanager.utils.UserMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,35 +17,32 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final ModelMapper modelMapper;
 
     public AuthenticationService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            AuthenticationManager authenticationManager,
-            ModelMapper modelMapper
+            AuthenticationManager authenticationManager
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
-        this.modelMapper = modelMapper;
     }
 
     public UserDTO signup(RegisterUserDTO input) {
         User user = new User();
-        user.setFullName(input.getFullName());
-        user.setEmail(input.getEmail());
-        user.setPassword(passwordEncoder.encode(input.getPassword()));
-        return modelMapper.map(userRepository.save(user), UserDTO.class);
+        user.setFullName(input.fullName());
+        user.setEmail(input.email());
+        user.setPassword(passwordEncoder.encode(input.password()));
+        return UserMapper.toDTO(userRepository.save(user));
     }
 
     public UserDTO authenticate(LoginUserDTO input) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        input.getEmail(),
-                        input.getPassword()
+                        input.email(),
+                        input.password()
                 )
         );
-        return modelMapper.map(userRepository.findByEmail(input.getEmail()).orElseThrow(), UserDTO.class);
+        return UserMapper.toDTO(userRepository.findByEmail(input.email()).orElseThrow(() -> new UsernameNotFoundException("User email not found")));
     }
 }

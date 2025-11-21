@@ -1,14 +1,14 @@
 package org.example.interviewmanager.service;
 
-import org.example.interviewmanager.dto.CompanyDTO;
 import org.example.interviewmanager.dto.OpenPositionDTO;
 import org.example.interviewmanager.repository.CompanyRepository;
 import org.example.interviewmanager.repository.OpenPositionRepository;
 import org.example.interviewmanager.repository.entity.Company;
 import org.example.interviewmanager.repository.entity.OpenPosition;
+import org.example.interviewmanager.utils.CompanyMapper;
+import org.example.interviewmanager.utils.OpenPositionMapper;
 import org.example.interviewmanager.utils.exception.CompanyNotFoundException;
 import org.example.interviewmanager.utils.exception.OpenPositionNotFoundException;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,42 +24,50 @@ public class OpenPositionService {
 
     private final OpenPositionRepository openPositionRepository;
     private final CompanyRepository companyRepository;
-    private final ModelMapper modelMapper;
 
-    public OpenPositionService(OpenPositionRepository openPositionRepository, CompanyRepository companyRepository,  ModelMapper modelMapper) {
+    public OpenPositionService(
+            OpenPositionRepository openPositionRepository,
+            CompanyRepository companyRepository
+    ) {
         this.openPositionRepository = openPositionRepository;
         this.companyRepository = companyRepository;
-        this.modelMapper = modelMapper;
     }
 
     public OpenPositionDTO getOpenPositionById(UUID id) {
-        return modelMapper.map(openPositionRepository.findById(id), OpenPositionDTO.class);
+        return OpenPositionMapper.toDTO(
+                openPositionRepository.findById(id).orElseThrow(() ->new OpenPositionNotFoundException("Open Position not found"))
+        );
     }
 
     public List<OpenPositionDTO> getOpenPositionsByLevel(String level, Pageable pageable) {
         Page<OpenPosition> openPositions = openPositionRepository.findOpenPositionsByLevel(level, pageable);
-        return openPositions.stream().map((element) -> modelMapper.map(element, OpenPositionDTO.class)).collect(Collectors.toList());
+        return openPositions.stream().map(OpenPositionMapper::toDTO).collect(Collectors.toList());
 
     }
 
     public List<OpenPositionDTO> getOpenPositions(Pageable pageable) {
         Page<OpenPosition> openPositions = openPositionRepository.findAll(pageable);
-        return openPositions.stream().map((element) -> modelMapper.map(element, OpenPositionDTO.class)).collect(Collectors.toList());
+        return openPositions.stream().map(OpenPositionMapper::toDTO).collect(Collectors.toList());
     }
 
     public OpenPositionDTO saveOpenPosition(OpenPositionDTO openPositionDTO) {
-        Optional<Company> companyOpt = companyRepository.findById(openPositionDTO.getCompany().getId());
+        Optional<Company> companyOpt = companyRepository.findById(openPositionDTO.company().id());
         if(companyOpt.isEmpty()) {
-            throw new CompanyNotFoundException("Company id: "+ openPositionDTO.getCompany().getId()+" not found");
+            throw new CompanyNotFoundException("Company id: "+ openPositionDTO.company().id()+" not found");
         } else {
-            openPositionDTO.setCompany(modelMapper.map(companyOpt.get(), CompanyDTO.class));
-            OpenPosition openPosition = modelMapper.map(openPositionDTO, OpenPosition.class);
-            return modelMapper.map(openPositionRepository.save(openPosition), OpenPositionDTO.class);
+            OpenPositionDTO newOpenPositionDTO = new OpenPositionDTO(
+                    openPositionDTO.id(),
+                    openPositionDTO.level(),
+                    openPositionDTO.type(),
+                    CompanyMapper.toDTO(companyOpt.get())
+            );
+            OpenPosition openPosition = OpenPositionMapper.toEntity(newOpenPositionDTO);
+            return OpenPositionMapper.toDTO(openPositionRepository.save(openPosition));
         }
     }
 
     public OpenPositionDTO updateOpenPosition(OpenPositionDTO openPositionDTO, UUID id) {
-        OpenPosition openPosition = modelMapper.map(openPositionDTO, OpenPosition.class);
+        OpenPosition openPosition = OpenPositionMapper.toEntity(openPositionDTO);
         Optional<OpenPosition> openPositionDbOptional = openPositionRepository.findById(id);
         if (openPositionDbOptional.isPresent()) {
             OpenPosition openPositionDb = openPositionDbOptional.get();
@@ -73,7 +81,7 @@ public class OpenPositionService {
                     !openPositionDb.getType().equals(openPosition.getType())){
                 openPositionDb.setType(openPosition.getType());
             }
-            return modelMapper.map(openPositionRepository.save(openPositionDb), OpenPositionDTO.class);
+            return OpenPositionMapper.toDTO(openPositionRepository.save(openPositionDb));
         } else {
             throw new OpenPositionNotFoundException("OpenPosition not found");
         }
